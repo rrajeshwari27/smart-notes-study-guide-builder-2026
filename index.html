@@ -1,0 +1,182 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Notes Study Guide Builder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+        }
+
+        h1 {
+            color: #254b70;
+            text-align: center;
+        }
+
+        textarea, input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            height: 130px;
+        }
+
+        button {
+            background: #254b70;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            margin: 5px 3px;
+            cursor: pointer;
+        }
+
+        .note {
+            background: #edf3f8;
+            padding: 12px;
+            margin-top: 12px;
+            border-radius: 8px;
+            overflow-wrap: anywhere;
+        }
+
+        #summary {
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Smart Notes Study Guide Builder</h1>
+        <p>Create, save and revise your study notes easily.</p>
+
+        <input id="title" placeholder="Enter note title">
+
+        <textarea id="content"
+            placeholder="Enter your study notes here..."></textarea>
+
+        <button onclick="saveNote()">Save Note</button>
+        <button onclick="makeSummary()">Create Summary</button>
+
+        <h2>Search Your Notes</h2>
+        <input id="search" placeholder="Search notes..."
+            oninput="showNotes()">
+
+        <h2>Your Saved Notes</h2>
+        <div id="notes"></div>
+
+        <h2>Revision Summary</h2>
+        <div class="note" id="summary">
+            Your summary will appear here.
+        </div>
+    </div>
+
+    <script>
+        let notes = JSON.parse(
+            localStorage.getItem("studyNotes") || "[]"
+        );
+
+        function saveNote() {
+            let title = document.getElementById("title").value.trim();
+            let content = document.getElementById("content").value.trim();
+
+            if (title === "" || content === "") {
+                alert("Please enter both title and notes.");
+                return;
+            }
+
+            notes.push({ title: title, content: content });
+
+            localStorage.setItem("studyNotes", JSON.stringify(notes));
+
+            document.getElementById("title").value = "";
+            document.getElementById("content").value = "";
+
+            showNotes();
+            alert("Note saved successfully!");
+        }
+
+        function showNotes() {
+            let search = document.getElementById("search")
+                .value.toLowerCase();
+
+            let area = document.getElementById("notes");
+            area.replaceChildren();
+
+            notes.forEach(function(note, index) {
+                if ((note.title + " " + note.content)
+                    .toLowerCase().includes(search)) {
+
+                    let card = document.createElement("div");
+                    card.className = "note";
+
+                    let heading = document.createElement("h3");
+                    heading.textContent = note.title;
+
+                    let paragraph = document.createElement("p");
+                    paragraph.textContent = note.content;
+
+                    let remove = document.createElement("button");
+                    remove.textContent = "Delete";
+                    remove.onclick = function() {
+                        notes.splice(index, 1);
+                        localStorage.setItem(
+                            "studyNotes", JSON.stringify(notes)
+                        );
+                        showNotes();
+                    };
+
+                    card.append(heading, paragraph, remove);
+                    area.appendChild(card);
+                }
+            });
+        }
+
+        function makeSummary() {
+            let content = document.getElementById("content")
+                .value.trim();
+
+            if (content === "") {
+                alert("Enter your notes first to create a summary.");
+                return;
+            }
+
+            let sentences = content.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [];
+            let summary = sentences.slice(0, 3).join(" ").trim();
+
+            document.getElementById("summary").textContent = summary;
+        }
+
+        showNotes();
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
